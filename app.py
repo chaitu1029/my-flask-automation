@@ -11,10 +11,9 @@ import shutil
 import pandas as pd
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Enable Cross-Origin requests so your frontend can call this API
 
 def run_webland_automation():
-    # Put your entire selenium script logic here, adapted to function scope
     USERNAME = "jcwg05999"
     PASSWORD = "Password#1"
     TARGET_DISTRICT = "పశ్చిమ గోదావరి-West Godavari"
@@ -31,6 +30,11 @@ def run_webland_automation():
         "safebrowsing.enabled": True
     }
     options.add_experimental_option("prefs", prefs)
+
+    # Use headless mode if running on server without GUI:
+    # options.add_argument('--headless')
+    # options.add_argument('--no-sandbox')
+    # options.add_argument('--disable-dev-shm-usage')
 
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 20)
@@ -120,7 +124,6 @@ def run_webland_automation():
                         print(f"   🏘️ Village: {village_name} ({village_code})")
                         time.sleep(1)
 
-                        # Switch to frame and click Get Details
                         driver.switch_to.default_content()
                         try:
                             frame = wait.until(EC.presence_of_element_located((By.ID, "ifrm")))
@@ -135,7 +138,6 @@ def run_webland_automation():
                         button.click()
                         time.sleep(2)
 
-                        # Export if available
                         try:
                             export_xpath = "//input[contains(@value, 'Export') or contains(@title, 'Export')]"
                             export_button = WebDriverWait(driver, 5).until(
@@ -207,7 +209,6 @@ def run_webland_automation():
 
 @app.route('/run_automation')
 def run_automation_route():
-    # Run the selenium automation in a background thread to avoid blocking
     thread = threading.Thread(target=run_webland_automation)
     thread.start()
     return jsonify({"message": "Automation started in background. Check logs for progress."})
