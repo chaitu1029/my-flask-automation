@@ -1,10 +1,9 @@
-from flask import Flask, render_template, redirect, url_for
-import threading
+from flask import Flask, render_template
 
 app = Flask(__name__)
 
-@app.route('/run-python-code')
-def run_python_code():
+@app.route('/')
+def home():
     return render_template('index.html')
 
 def run_selenium_script():
