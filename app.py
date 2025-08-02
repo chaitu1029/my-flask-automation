@@ -9,29 +9,39 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
+import logging
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO)
 
 @app.route('/')
 def home():
     return render_template('index.html')
 
 def run_selenium_script():
+    logging.info("Selenium script started")
     options = Options()
-    options.add_argument("--headless=new")  # Modern headless Chrome mode
+    # Use the recommended flags for Chrome headless in container environments
+    options.add_argument("--headless")  # Use --headless or --headless=new depending on Chrome version
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
+    # Extra args to fix session not created / DevToolsActivePort errors
+    options.add_argument("--remote-debugging-port=9222")
+    options.add_argument("--disable-background-timer-throttling")
+    options.add_argument("--disable-backgrounding-occluded-windows")
+    options.add_argument("--disable-renderer-backgrounding")
 
-    service = Service()  # Auto-find ChromeDriver (Selenium Manager)
-
-    driver = webdriver.Chrome(service=service, options=options)
-
-    driver.get("https://uatwebland.ap.gov.in/weblanddashboard")
-    wait = WebDriverWait(driver, 30)
+    service = Service()  # Selenium Manager will auto-manage ChromeDriver
 
     try:
+        driver = webdriver.Chrome(service=service, options=options)
+        logging.info("Chrome WebDriver started")
+
+        driver.get("https://uatwebland.ap.gov.in/weblanddashboard")
+        wait = WebDriverWait(driver, 30)
+
         main_menu = wait.until(EC.presence_of_element_located(
             (By.XPATH, "//a[contains(text(), '1. Abstract - Mutation For Corrections Reports')]")))
         driver.execute_script("arguments[0].scrollIntoView(true);", main_menu)
@@ -50,11 +60,15 @@ def run_selenium_script():
         driver.execute_script("arguments[0].scrollIntoView(true);", narsapuram_link)
         narsapuram_link.click()
 
-    except Exception as e:
-        print("[❌] Error occurred:", e)
+        logging.info("Selenium automation steps completed successfully.")
 
-    time.sleep(10)
-    driver.quit()
+        time.sleep(10)  # Allow time to observe or wait for processes to complete
+
+    except Exception as e:
+        logging.error(f"Selenium error: {e}")
+    finally:
+        driver.quit()
+        logging.info("Chrome WebDriver closed")
 
 @app.route('/run-automation')
 def run_automation():
@@ -62,4 +76,5 @@ def run_automation():
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    # Listen on all interfaces, port 8000 to match Dockerfile & Render config
+    app.run(host='0.0.0.0', port=8000, debug=False)

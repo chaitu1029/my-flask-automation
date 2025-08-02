@@ -1,15 +1,13 @@
-# Use official Python 3.11 (or latest) slim base image
+# Use official Python slim image as base
 FROM python:3.11-slim
 
-# Install dependencies for Chrome and Selenium
+# Install dependencies for Chrome and fonts
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
     unzip \
     ca-certificates \
     fonts-liberation \
-    libappindicator3-1 \
-    libasound2 \
     libatk-bridge2.0-0 \
     libatk1.0-0 \
     libcups2 \
@@ -21,29 +19,33 @@ RUN apt-get update && apt-get install -y \
     libxcomposite1 \
     libxdamage1 \
     libxrandr2 \
-    libxshmfence1 \
-    xdg-utils \
     libgbm1 \
+    libasound2 \
+    xdg-utils \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Google Chrome
-
+# Install Google Chrome stable
 RUN wget -q -O /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
     apt-get update && apt-get install -y /tmp/google-chrome.deb && \
     rm /tmp/google-chrome.deb && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
+# Set working directory inside container
 WORKDIR /app
-COPY requirements.txt requirements.txt
+
+# Copy dependency files
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app source code
+# Copy all other source code to /app
 COPY . .
 
-# Expose port 8000 (matches Flask/gunicorn)
+# Expose port 8000
 EXPOSE 8000
 
-# Run the app using gunicorn
+# Start the Flask app with Gunicorn as per Procfile
 CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8000", "--workers", "1"]
