@@ -18,17 +18,16 @@ def home():
 
 def run_selenium_script():
     options = Options()
-    # Run Chrome in headless mode (no UI)
-    options.add_argument("--headless=new")  # '--headless=new' is the modern headless mode
+    options.add_argument("--headless=new")  # Modern headless Chrome mode
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
 
-    # Use default System PATH or Selenium Manager to find ChromeDriver
-    service = Service()
+    service = Service()  # Auto-find ChromeDriver (Selenium Manager)
 
     driver = webdriver.Chrome(service=service, options=options)
+
     driver.get("https://uatwebland.ap.gov.in/weblanddashboard")
     wait = WebDriverWait(driver, 30)
 
@@ -63,4 +62,4 @@ def run_automation():
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8000)
