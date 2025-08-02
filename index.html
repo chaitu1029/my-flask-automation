@@ -1,21 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Trigger Python Automation</title>
+    <meta charset="UTF-8" />
+    <title>Run Python Code</title>
 </head>
 <body>
-
-<h2>Run Automation via API</h2>
-<button id="runBtn">Run Automation</button>
-
-<script>
-  document.getElementById('runBtn').onclick = function () {
-    fetch('/run_automation')
-      .then(response => response.json())
-      .then(data => alert(data.message))
-      .catch(error => alert('Error: ' + error));
-  }
-</script>
-
+    <h1>Click to run Python code</h1>
+    <a href="{{ url_for('run_python_code') }}">Run Python Code</a>
 </body>
 </html>
