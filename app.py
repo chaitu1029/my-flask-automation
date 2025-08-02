@@ -3,8 +3,8 @@ import threading
 
 app = Flask(__name__)
 
-@app.route('/')
-def home():
+@app.route('/run-python-code')
+def run_python_code():
     return render_template('index.html')
 
 def run_selenium_script():
