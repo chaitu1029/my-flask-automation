@@ -21,7 +21,7 @@ def home():
 def run_selenium_script():
     logging.info("Selenium script started")
     options = Options()
-    options.add_argument("--headless")  # or "--headless=new"
+    options.add_argument("--headless")  # or "--headless=new" if your Chrome supports it
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
@@ -31,8 +31,8 @@ def run_selenium_script():
     options.add_argument("--disable-backgrounding-occluded-windows")
     options.add_argument("--disable-renderer-backgrounding")
 
-    # Explicitly specify Chrome binary location inside the container
-    options.binary_location = "/usr/bin/google-chrome"
+    # Set Chrome binary location explicitly to where chrome-stable installs on Debian-based systems
+    options.binary_location = "/usr/bin/google-chrome-stable"
 
     service = Service()  # Selenium Manager auto-handles ChromeDriver
 
