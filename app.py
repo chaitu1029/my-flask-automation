@@ -21,20 +21,22 @@ def home():
 def run_selenium_script():
     logging.info("Selenium script started")
     options = Options()
-    # Use the recommended flags for Chrome headless in container environments
-    options.add_argument("--headless")  # Use --headless or --headless=new depending on Chrome version
+    options.add_argument("--headless")  # or "--headless=new"
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
-    # Extra args to fix session not created / DevToolsActivePort errors
     options.add_argument("--remote-debugging-port=9222")
     options.add_argument("--disable-background-timer-throttling")
     options.add_argument("--disable-backgrounding-occluded-windows")
     options.add_argument("--disable-renderer-backgrounding")
 
-    service = Service()  # Selenium Manager will auto-manage ChromeDriver
+    # Explicitly specify Chrome binary location inside the container
+    options.binary_location = "/usr/bin/google-chrome"
 
+    service = Service()  # Selenium Manager auto-handles ChromeDriver
+
+    driver = None
     try:
         driver = webdriver.Chrome(service=service, options=options)
         logging.info("Chrome WebDriver started")
@@ -62,13 +64,15 @@ def run_selenium_script():
 
         logging.info("Selenium automation steps completed successfully.")
 
-        time.sleep(10)  # Allow time to observe or wait for processes to complete
+        time.sleep(10)
 
     except Exception as e:
         logging.error(f"Selenium error: {e}")
+
     finally:
-        driver.quit()
-        logging.info("Chrome WebDriver closed")
+        if driver:
+            driver.quit()
+            logging.info("Chrome WebDriver closed")
 
 @app.route('/run-automation')
 def run_automation():
@@ -76,5 +80,4 @@ def run_automation():
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    # Listen on all interfaces, port 8000 to match Dockerfile & Render config
     app.run(host='0.0.0.0', port=8000, debug=False)

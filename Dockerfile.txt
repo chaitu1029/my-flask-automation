@@ -1,7 +1,6 @@
-# Use official Python slim image as base
 FROM python:3.11-slim
 
-# Install dependencies for Chrome and fonts
+# Install dependencies for Chrome
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
@@ -25,27 +24,21 @@ RUN apt-get update && apt-get install -y \
     --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Google Chrome stable
+# Install Google Chrome Stable
 RUN wget -q -O /tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
     apt-get update && apt-get install -y /tmp/google-chrome.deb && \
     rm /tmp/google-chrome.deb && \
     rm -rf /var/lib/apt/lists/*
 
-# Set working directory inside container
 WORKDIR /app
 
-# Copy dependency files
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy all other source code to /app
 COPY . .
 
-# Expose port 8000
 EXPOSE 8000
 
-# Start the Flask app with Gunicorn as per Procfile
 CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8000", "--workers", "1"]
