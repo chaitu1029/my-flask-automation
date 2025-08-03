@@ -1,12 +1,9 @@
-import threading
 import logging
-from flask import Flask, redirect, url_for
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-
-app = Flask(__name__)
-logging.basicConfig(level=logging.INFO)
+from selenium.webdriver.remote.remote_connection import RemoteConnection
+from requests.exceptions import ReadTimeout
 
 def run_selenium():
     logging.info("Selenium automation started")
@@ -15,31 +12,26 @@ def run_selenium():
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-
-        # Chrome binary installed in the container
         options.binary_location = "/usr/bin/google-chrome"
 
-        # ChromeDriver binary installed in the container
         service = Service(executable_path="/usr/local/bin/chromedriver")
 
+        # Increase HttpConnection timeout from default (60s) to 300s (5 mins)
+        RemoteConnection._CONNECTION_TIMEOUT = 300
+
         driver = webdriver.Chrome(service=service, options=options)
+
         driver.get("https://example.com")
         logging.info(f"Page title: {driver.title}")
+
+        # Add any additional automation steps here
+
         driver.quit()
         logging.info("Selenium automation finished successfully")
+
+    except ReadTimeout as rt:
+        logging.error(f"Selenium ReadTimeout error: {rt}", exc_info=True)
+        # Optionally, you could restart the driver here or handle cleanup
+
     except Exception as e:
-        logging.error(f"Selenium error: {e}")
-
-@app.route('/run-automation')
-def run_automation():
-    threading.Thread(target=run_selenium).start()
-    return redirect(url_for('index'))
-
-@app.route('/')
-def index():
-    return "Selenium automation started - check logs"
-
-if __name__ == "__main__":
-    import os
-    port = int(os.environ.get("PORT", 8000))
-    app.run(host="0.0.0.0", port=port)
+        logging.error(f"Selenium error: {e}", exc_info=True)
