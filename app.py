@@ -32,7 +32,7 @@ def run_selenium_script():
     options.add_argument("--disable-renderer-backgrounding")
 
     # Set Chrome binary location explicitly to where chrome-stable installs on Debian-based systems
-    options.binary_location = "/usr/bin/google-chrome-stable"
+    options.binary_location = "/usr/bin/google-chrome"
 
     service = Service()  # Selenium Manager auto-handles ChromeDriver
 
